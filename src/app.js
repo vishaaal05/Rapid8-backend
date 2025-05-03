@@ -1,8 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-// const { Server } = require("socket.io");
-// const http = require("http");
+const { Server } = require("socket.io");
+const http = require("http");
 const ambulanceRoutes = require("./routes/ambulance.routes.js");
 const sosRoutes = require("./routes/sos.routes.js");
 
@@ -12,6 +12,8 @@ app.use(express.urlencoded({ extended: true })); // Added this line
 
 const allowedOrigins = [
   "http://localhost:5000",
+  "http://localhost:3001",
+  "http://127.0.0.1:5500",
   "https://rapid8.vercel.app", // Add your frontend deployed URL here
 ];
 
@@ -49,18 +51,27 @@ app.use((err, req, res, next) => {
   });
 });
 
-// const server = http.createServer(app);
-// const io = new Server(server, {
-//   cors: {
-//     origin: allowedOrigins,
-//     methods: ["GET", "POST"],
-//     credentials: true
-//   }
-// });
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
 // Socket connection handler
-// io.on("connection", (socket) => {
-//   console.log("Client connected");
+io.on("connection", (socket) => {
+  console.log("Client connected");
+
+  socket.on("join-ambulance-tracking", (ambulanceId) => {
+    socket.join(`ambulance-${ambulanceId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
 
 //   socket.on("join-ambulance-tracking", (ambulanceId) => {
 //     socket.join(`ambulance-${ambulanceId}`);
@@ -72,7 +83,7 @@ app.use((err, req, res, next) => {
 // });
 
 // Make io accessible to our routes
-// app.set("io", io);
+app.set("io", io);
 
 // Change module.exports to export server instead of app
-// module.exports = server;
+module.exports = server;

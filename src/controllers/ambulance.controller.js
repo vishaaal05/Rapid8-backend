@@ -1,4 +1,5 @@
 const Ambulance = require("../models/Ambulance");
+const { getIO } = require("../socket/socket.service");
 
 exports.updateLocation = async (req, res) => {
   const { id, lat, lng } = req.body;
@@ -8,17 +9,28 @@ exports.updateLocation = async (req, res) => {
   }
 
   try {
-    const ambulance = await Ambulance.findByIdAndUpdate(id, {
-      location: {
-        type: "Point",
-        coordinates: [lng, lat]
+    const ambulance = await Ambulance.findByIdAndUpdate(id, 
+      {
+        location: {
+          type: "Point",
+          coordinates: [lng, lat]
+        },
+        lastUpdated: new Date()
       },
-      lastUpdated: new Date()
-    });
+      { new: true }
+    );
 
     if (!ambulance) {
       return res.status(404).json({ success: false, message: "Ambulance not found" });
     }
+
+    // Emit location update through socket
+    const io = getIO();
+    io.to(`ambulance-${id}`).emit("location-update", {
+      ambulanceId: id,
+      location: { lat, lng },
+      timestamp: new Date()
+    });
 
     res.json({ success: true, message: "Location updated" });
   } catch (err) {

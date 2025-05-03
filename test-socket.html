@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Ambulance Location Updates</h1>
+    <div id="updates"></div>
+
+    <script>
+        const socket = io('https://rapid8-backend.onrender.com', {
+            withCredentials: true
+        });
+
+        // Replace with your ambulance ID
+        const AMBULANCE_ID = '68161ba466578384f4b229d1';
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            // Join the ambulance tracking room
+            socket.emit('join-tracking', AMBULANCE_ID);
+        });
+
+        socket.on('location-update', (data) => {
+            console.log('Location update:', data);
+            const updates = document.getElementById('updates');
+            updates.innerHTML += `<p>
+                Ambulance ${data.ambulanceId}<br>
+                Lat: ${data.location.lat}<br>
+                Lng: ${data.location.lng}<br>
+                Time: ${new Date(data.timestamp).toLocaleString()}
+            </p>`;
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+    </script>
+</body>
+</html>
