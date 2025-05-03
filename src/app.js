@@ -1,26 +1,12 @@
 const express = require("express");
 const cors = require("cors");
-const prisma = require("./config/db");
 
 const app = express();
 app.use(express.json());
-
 app.use(cors());
-
-// Ensure database is connected before starting the server
-app.use(async (req, res, next) => {
-  try {
-    await prisma.$connect();
-    next();
-  } catch (error) {
-    ``;
-    console.error("Database connection error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Database connection error",
-    });
-  }
-});
+const sosRoutes = require("./routes/sos.routes.js");
+// Routes
+app.use('/api', sosRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
