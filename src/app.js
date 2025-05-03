@@ -3,16 +3,14 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-// ✅ Enable CORS for all origins
-app.use(cors());
 
-// Or to allow specific origin (more secure):
+// ✅ Correct CORS config for local frontend
 app.use(cors({
-  origin: "http://localhost:5000" // replace with your frontend domain
+  origin: "http://localhost:5000",  // your frontend
+  credentials: true
 }));
 
 app.use(express.json());
-
 // Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 const ambulanceRoutes = require("./routes/ambulance.routes.js");
@@ -20,6 +18,7 @@ const sosRoutes = require("./routes/sos.routes.js");
 // Routes
 app.use('/api', sosRoutes);
 app.use("/api/ambulance", ambulanceRoutes);
+// app.options("*", cors());
 
 // Enhanced error handling middleware
 app.use((err, req, res, next) => {
