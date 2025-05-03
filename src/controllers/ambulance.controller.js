@@ -61,3 +61,41 @@ exports.createAmbulance = async (req, res) => {
     });
   }
 };
+
+exports.getAllAmbulances = async (req, res) => {
+  try {
+    const ambulances = await Ambulance.find();
+    res.status(200).json({
+      success: true,
+      data: ambulances
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+};
+
+exports.getAmbulanceById = async (req, res) => {
+  try {
+    const ambulance = await Ambulance.findById(req.params.id);
+    if (!ambulance) {
+      return res.status(404).json({
+        success: false,
+        message: "Ambulance not found"
+      });
+    }
+    res.status(200).json({
+      success: true,
+      data: ambulance
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+};
