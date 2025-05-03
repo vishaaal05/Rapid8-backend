@@ -9,7 +9,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Added this line
 
 const allowedOrigins = [
-  "http://localhost:5000"
+  "http://localhost:5000",
+  "https://your-production-frontend-domain.com",  // Add your production frontend URL
+  "https://your-staging-frontend-domain.com"      // Add any other environments
 ];
 
 app.use(cors({
@@ -20,7 +22,9 @@ app.use(cors({
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: false
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Add allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'],     // Add allowed headers
+  credentials: true  // Enable if you're using cookies/authentication
 }));
 
 // Add this line to serve uploaded files
