@@ -8,6 +8,8 @@ const handleSOSRequest = async (req, res) => {
     const { name, condition, location, phone } = req.body;
     let imageUrl = null;
 
+    console.log(location, "Location from SOS request");
+
     if (req.file) {
       imageUrl = await uploadToCloudinary(req.file);
     }
@@ -19,7 +21,7 @@ const handleSOSRequest = async (req, res) => {
       });
     }
 
-    const newRequest = await createEmergencyRequest({ 
+    const newRequest = await createEmergencyRequest({
       name, 
       condition, 
       location, 
