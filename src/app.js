@@ -8,10 +8,11 @@ app.use(cors());
 
 // Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
+const ambulanceRoutes = require("./routes/ambulance.routes.js");
 const sosRoutes = require("./routes/sos.routes.js");
 // Routes
 app.use('/api', sosRoutes);
+app.use("/api/ambulance", ambulanceRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
