@@ -7,17 +7,17 @@ app.use(express.json());
 
 app.use(cors());
 
-
 // Ensure database is connected before starting the server
 app.use(async (req, res, next) => {
   try {
     await prisma.$connect();
     next();
   } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Database connection error' 
+    ``;
+    console.error("Database connection error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database connection error",
     });
   }
 });
@@ -27,8 +27,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: "Something went wrong!",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
