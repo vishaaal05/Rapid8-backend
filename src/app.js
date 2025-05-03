@@ -3,21 +3,15 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-app.use(express.json());
+// ✅ Enable CORS for all origins
+app.use(cors());
 
-// Basic security headers
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  next();
-});
-
-// Simplified CORS configuration
+// Or to allow specific origin (more secure):
 app.use(cors({
-  origin: ["http://localhost:3000"],
-  credentials: false
+  origin: "http://localhost:5000" // replace with your frontend domain
 }));
+
+app.use(express.json());
 
 // Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
