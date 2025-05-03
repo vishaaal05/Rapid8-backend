@@ -4,8 +4,9 @@ const cloudinary = require('../config/cloudinary');
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
+    console.log('Processing file:', file);
     if (!file.mimetype.startsWith('image/')) {
       return cb(new Error('Only image files are allowed!'), false);
     }
@@ -15,18 +16,22 @@ const upload = multer({
 
 // Wrapped upload middleware to handle errors
 const uploadMiddleware = (req, res, next) => {
+  console.log('Upload middleware called');
   upload(req, res, function (err) {
     if (err instanceof multer.MulterError) {
+      console.error('Multer error:', err);
       return res.status(400).json({
         success: false,
-        message: err.message
+        message: `Upload error: ${err.message}`
       });
     } else if (err) {
+      console.error('Upload error:', err);
       return res.status(400).json({
         success: false,
         message: err.message
       });
     }
+    console.log('File upload successful');
     next();
   });
 };
