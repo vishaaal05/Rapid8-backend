@@ -3,17 +3,25 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
+app.use(express.json());
 
 // Configure CORS before other middleware
+const allowedOrigins = [
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  optionsSuccessStatus: 200
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: false
 }));
 
-app.use(express.json());
+
 
 // Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
