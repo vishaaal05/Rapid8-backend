@@ -3,12 +3,17 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
-app.use(express.json());
+
+// Configure CORS before other middleware
 app.use(cors({
   origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
+
+app.use(express.json());
 
 // Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
