@@ -1,41 +1,42 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const { Server } = require("socket.io");
-const http = require("http");
 const ambulanceRoutes = require("./routes/ambulance.routes.js");
 const sosRoutes = require("./routes/sos.routes.js");
 
 const app = express();
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Added this line
+app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
   "http://localhost:5000",
   "http://localhost:3001",
   "http://127.0.0.1:5500",
-  "https://rapid8.vercel.app", // Add your frontend deployed URL here
+  "https://rapid8.vercel.app",
+  // Allow Postman requests
+  "chrome-extension://fhbjgbiflinjbdggehcddcbncdddomop"
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Add allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'],     // Add allowed headers
-  credentials: true  // Enable if you're using cookies/authentication
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
-// Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api', sosRoutes);
 app.use("/api/ambulance", ambulanceRoutes);
 
-// Enhanced error handling middleware
 app.use((err, req, res, next) => {
   console.error(`Error: ${err.message}`);
   console.error(`Stack: ${err.stack}`);
@@ -51,39 +52,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
-
-// Socket connection handler
-io.on("connection", (socket) => {
-  console.log("Client connected");
-
-  socket.on("join-ambulance-tracking", (ambulanceId) => {
-    socket.join(`ambulance-${ambulanceId}`);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-});
-
-//   socket.on("join-ambulance-tracking", (ambulanceId) => {
-//     socket.join(`ambulance-${ambulanceId}`);
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("Client disconnected");
-//   });
-// });
-
-// Make io accessible to our routes
-app.set("io", io);
-
-// Change module.exports to export server instead of app
-module.exports = server;
+module.exports = app;
