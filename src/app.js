@@ -6,8 +6,7 @@ const app = express();
 
 // ✅ Correct CORS config for local frontend
 app.use(cors({
-  origin: "http://localhost:5000",  // your frontend
-  credentials: true
+  origin: "http://localhost:5000"
 }));
 
 app.use(express.json());
