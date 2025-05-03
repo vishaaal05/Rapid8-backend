@@ -5,23 +5,19 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-// Configure CORS before other middleware
-const allowedOrigins = [
-  "http://localhost:3000"
-];
+// Basic security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
+// Simplified CORS configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: ["http://localhost:3000"],
   credentials: false
 }));
-
-
 
 // Add this line to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -31,13 +27,19 @@ const sosRoutes = require("./routes/sos.routes.js");
 app.use('/api', sosRoutes);
 app.use("/api/ambulance", ambulanceRoutes);
 
-// Error handling middleware
+// Enhanced error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
+  console.error(`Error: ${err.message}`);
+  console.error(`Stack: ${err.stack}`);
+  
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
     success: false,
-    message: "Something went wrong!",
-    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    message: err.message || "Something went wrong!",
+    error: process.env.NODE_ENV === "development" ? {
+      stack: err.stack,
+      details: err.details || {}
+    } : undefined
   });
 });
 
