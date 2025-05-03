@@ -42,7 +42,7 @@ exports.createAmbulance = async (req, res) => {
       phone,
       location: {
         type: "Point",
-        coordinates: [location.lng, location.lat]
+        coordinates: [location.lat, location.lng]
       }
     });
 
