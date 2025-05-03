@@ -1,9 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Add this line to serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 const sosRoutes = require("./routes/sos.routes.js");
 // Routes
 app.use('/api', sosRoutes);

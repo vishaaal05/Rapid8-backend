@@ -1,17 +1,29 @@
 const { createEmergencyRequest } = require('../services/sos.service');
+const { uploadToCloudinary } = require('../middleware/upload');
 
 const handleSOSRequest = async (req, res) => {
   try {
-    const { name, condition, location, imageUrl } = req.body;
+    const { name, condition, location, phone } = req.body;
+    let imageUrl = null;
 
-    if (!name || !condition || !location || !imageUrl) {
+    if (req.file) {
+      imageUrl = await uploadToCloudinary(req.file);
+    }
+
+    if (!location) {
       return res.status(400).json({
         success: false,
-        message: 'All fields are required',
+        message: 'Location is required',
       });
     }
 
-    const newRequest = await createEmergencyRequest({ name, condition, location, imageUrl });
+    const newRequest = await createEmergencyRequest({ 
+      name, 
+      condition, 
+      location, 
+      imageUrl, 
+      phone 
+    });
 
     res.status(201).json({
       success: true,
@@ -22,7 +34,7 @@ const handleSOSRequest = async (req, res) => {
     console.error('SOS Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: error.message || 'Internal server error',
     });
   }
 };
