@@ -48,3 +48,23 @@ exports.getAmbulanceById = async (id) => {
 exports.getAllAmbulances = async () => {
   return await Ambulance.find().populate('owner_user_id', 'name phone');
 };
+
+exports.getAmbulanceLatestLocation = async (ambulanceId) => {
+  const ambulance = await Ambulance.findById(ambulanceId)
+    .select('location last_updated_at vehicle_number is_available is_active')
+    .lean();
+  
+  if (!ambulance) throw new Error('Ambulance not found');
+
+  return {
+    ambulanceId,
+    location: {
+      lat: ambulance.location.coordinates[1],
+      lng: ambulance.location.coordinates[0]
+    },
+    last_updated_at: ambulance.last_updated_at,
+    vehicle_number: ambulance.vehicle_number,
+    is_available: ambulance.is_available,
+    is_active: ambulance.is_active
+  };
+};

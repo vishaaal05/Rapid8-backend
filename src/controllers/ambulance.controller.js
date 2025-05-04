@@ -115,3 +115,20 @@ exports.findNearest = async (req, res) => {
     });
   }
 };
+
+exports.getLatestLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const locationData = await ambulanceService.getAmbulanceLatestLocation(id);
+    
+    res.status(200).json({
+      success: true,
+      data: locationData
+    });
+  } catch (err) {
+    res.status(err.message === 'Ambulance not found' ? 404 : 500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
