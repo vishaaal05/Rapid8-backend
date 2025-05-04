@@ -1,5 +1,6 @@
 const Ambulance = require("../models/Ambulance");
 const { getIO } = require("../socket/socket.service");
+const { findNearestAvailableAmbulance } = require("../services/ambulance.service");
 
 exports.updateLocation = async (req, res) => {
   const { id, lat, lng } = req.body;
@@ -102,6 +103,44 @@ exports.getAmbulanceById = async (req, res) => {
     res.status(200).json({
       success: true,
       data: ambulance
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
+  }
+};
+
+exports.findNearest = async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        message: "Latitude and longitude are required query parameters"
+      });
+    }
+
+    const nearestAmbulance = await findNearestAvailableAmbulance(parseFloat(lat), parseFloat(lng));
+
+    if (!nearestAmbulance) {
+      return res.status(404).json({
+        success: false,
+        message: "No available ambulance found nearby"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ambulanceId: nearestAmbulance._id,
+        driverName: nearestAmbulance.driverName,
+        phone: nearestAmbulance.phone,
+        distance: nearestAmbulance.distance // if available from the query
+      }
     });
   } catch (err) {
     res.status(500).json({
