@@ -1,6 +1,5 @@
-const Ambulance = require("../models/Ambulance");
 const { getIO } = require("../socket/socket.service");
-const { findNearestAvailableAmbulance } = require("../services/ambulance.service");
+const ambulanceService = require("../services/ambulance.service");
 
 exports.updateLocation = async (req, res) => {
   const { id, lat, lng } = req.body;
@@ -10,16 +9,7 @@ exports.updateLocation = async (req, res) => {
   }
 
   try {
-    const ambulance = await Ambulance.findByIdAndUpdate(id, 
-      {
-        location: {
-          type: "Point",
-          coordinates: [lng, lat]
-        },
-        lastUpdated: new Date()
-      },
-      { new: true }
-    );
+    const ambulance = await ambulanceService.updateAmbulanceLocation(id, lat, lng);
 
     if (!ambulance) {
       return res.status(404).json({ success: false, message: "Ambulance not found" });
@@ -33,34 +23,15 @@ exports.updateLocation = async (req, res) => {
       timestamp: new Date()
     });
 
-    res.json({ success: true, message: "Location updated" });
+    res.json({ success: true, data: ambulance });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
 exports.createAmbulance = async (req, res) => {
-  const { driverName, phone, location } = req.body;
-
-  if (!driverName || !phone || !location) {
-    return res.status(400).json({ 
-      success: false, 
-      message: "Missing required fields" 
-    });
-  }
-
   try {
-    const ambulance = new Ambulance({
-      driverName,
-      phone,
-      location: {
-        type: "Point",
-        coordinates: [location.lng,  location.lat]
-      }
-    });
-
-    await ambulance.save();
-
+    const ambulance = await ambulanceService.createAmbulance(req.body);
     res.status(201).json({ 
       success: true, 
       message: "Ambulance created successfully",
@@ -69,15 +40,14 @@ exports.createAmbulance = async (req, res) => {
   } catch (err) {
     res.status(500).json({ 
       success: false, 
-      message: "Server error", 
-      error: err.message 
+      message: err.message
     });
   }
 };
 
 exports.getAllAmbulances = async (req, res) => {
   try {
-    const ambulances = await Ambulance.find();
+    const ambulances = await ambulanceService.getAllAmbulances();
     res.status(200).json({
       success: true,
       data: ambulances
@@ -85,15 +55,14 @@ exports.getAllAmbulances = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Server error",
-      error: err.message
+      message: err.message
     });
   }
 };
 
 exports.getAmbulanceById = async (req, res) => {
   try {
-    const ambulance = await Ambulance.findById(req.params.id);
+    const ambulance = await ambulanceService.getAmbulanceById(req.params.id);
     if (!ambulance) {
       return res.status(404).json({
         success: false,
@@ -107,8 +76,7 @@ exports.getAmbulanceById = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Server error",
-      error: err.message
+      message: err.message
     });
   }
 };
@@ -124,7 +92,10 @@ exports.findNearest = async (req, res) => {
       });
     }
 
-    const nearestAmbulance = await findNearestAvailableAmbulance(parseFloat(lat), parseFloat(lng));
+    const nearestAmbulance = await ambulanceService.findNearestAvailableAmbulance(
+      parseFloat(lat), 
+      parseFloat(lng)
+    );
 
     if (!nearestAmbulance) {
       return res.status(404).json({
@@ -135,18 +106,12 @@ exports.findNearest = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: {
-        ambulanceId: nearestAmbulance._id,
-        driverName: nearestAmbulance.driverName,
-        phone: nearestAmbulance.phone,
-        distance: nearestAmbulance.distance // if available from the query
-      }
+      data: nearestAmbulance
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Server error",
-      error: err.message
+      message: err.message
     });
   }
 };
