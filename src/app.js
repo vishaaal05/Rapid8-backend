@@ -3,6 +3,7 @@ const cors = require("cors");
 const path = require("path");
 const ambulanceRoutes = require("./routes/ambulance.routes.js");
 const sosRoutes = require("./routes/sos.routes.js");
+const authRoutes = require("./routes/auth.routes.js");
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(cors({
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api', sosRoutes);
 app.use("/api/ambulance", ambulanceRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use((err, req, res, next) => {
   console.error(`Error: ${err.message}`);

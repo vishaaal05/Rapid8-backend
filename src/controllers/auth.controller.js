@@ -1,42 +1,53 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const HospitalStaff = require("../models/hospitalStaff.model"); // Assuming you have this model
-const User = require("../models/user.model"); // For patient logins
+const authService = require('../services/auth.service');
 
-// @desc    Login user/staff
-// @route   POST /api/auth/login
-// @access  Public
+const signup = async (req, res) => {
+  try {
+    const user = await authService.signup(req.body);
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: {
+        userId: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Check if email and password are provided
-    if (!password.trim() || !email.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
-    // Determine which model to use based on role
-    const user = await User.findOne({ email });
-
-    if (!user.length) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    const loggedInUser = await bcrypt.compare(password, user.password);
-
-    if(loggedInUser) {
-        
-    }
+    const { user, token } = await authService.login(email, password);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Logged in successfully',
+      data: {
+        token,
+        user: {
+          userId: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        }
+      }
+    });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(401).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-module.exports = { login };
+module.exports = {
+  signup,
+  login
+};
